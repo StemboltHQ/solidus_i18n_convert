@@ -1,3 +1,4 @@
+require 'active_support'
 require 'yaml'
 require 'pp'
 
@@ -10,6 +11,18 @@ def hash_flatten prefix, value
     end
   else
     [[prefix, value]]
+  end
+end
+
+# Convert the flattened hash back into a nested hash structure
+def reconstruct flat_hash
+  flat_hash.inject({}) do |result, (key, value)|
+    # Build the nested hash for a single key/value pair
+    hash = key.split(".").reverse.inject(value) do |r, e|
+      { e => r }
+    end
+
+    result.deep_merge(hash)
   end
 end
 
@@ -28,5 +41,7 @@ missing_keys.each do |key|
   candidates.sort_by!(&:length)
   next if candidates.empty?
 
-  puts "dest[#{key.inspect}] ||= source[#{candidates.first.inspect}]"
+  flat_dest[key] ||= source[candidates.first]
 end
+
+pp reconstruct(flat_dest)
