@@ -24,6 +24,9 @@ missing_keys = flat_source.keys - flat_dest.keys
 missing_keys.each do |key|
   missing_value = flat_source[key]
   candidates = flat_source.select { |k, v| v == missing_value }.keys
-  candidates.delete(key)
-  pp candidates
+  candidates -= missing_keys
+  candidates.sort_by!(&:length)
+  next if candidates.empty?
+
+  puts "dest[#{key.inspect}] ||= source[#{candidates.first.inspect}]"
 end
