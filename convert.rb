@@ -26,11 +26,12 @@ def reconstruct flat_hash
   end
 end
 
+dest_locale = "nl"
 source = YAML.load_file("locales/en.yml")
-destination = YAML.load_file("locales/nl.yml")
+destination = YAML.load_file("locales/#{dest_locale}.yml")
 
 flat_source = hash_flatten('', source['en']).to_h
-flat_dest = hash_flatten('', destination['nl']).to_h
+flat_dest = hash_flatten('', destination[dest_locale]).to_h
 
 missing_keys = flat_source.keys - flat_dest.keys
 
@@ -41,7 +42,12 @@ missing_keys.each do |key|
   candidates.sort_by!(&:length)
   next if candidates.empty?
 
-  flat_dest[key] ||= source[candidates.first]
+  flat_dest[key] ||= flat_dest[candidates.first]
 end
 
-pp reconstruct(flat_dest)
+new_locale = reconstruct(flat_dest)
+File.open('nl_new.yml', 'w') do |f|
+  yaml = YAML.dump({dest_locale => new_locale}, line_width: 1000)
+  yaml.gsub!(/ +$/, '')
+  f.write(yaml)
+end
