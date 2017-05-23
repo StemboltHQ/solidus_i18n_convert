@@ -1,4 +1,5 @@
 require 'active_support'
+require 'fileutils'
 require 'yaml'
 require 'pp'
 
