@@ -29,6 +29,16 @@ def reconstruct flat_hash
   end
 end
 
+# Recursively sorts a hash by its keys
+def recsort(hash)
+  hash = hash.sort_by(&:first).to_h
+  hash.each do |k, v|
+    if v.is_a? Hash
+      hash[k] = recsort(v)
+    end
+  end
+end
+
 source = YAML.load_file("locales/en.yml")
 flat_source = hash_flatten('', source['en']).to_h
 
@@ -48,7 +58,7 @@ TARGET_LOCALES.each do |target_locale|
     flat_dest[key] ||= flat_dest[candidates.first]
   end
 
-  new_locale = reconstruct(flat_dest)
+  new_locale = recsort(reconstruct(flat_dest))
   FileUtils.mkdir_p "output"
   File.open("output/#{target_locale}_new.yml", 'w') do |f|
     yaml = YAML.dump({target_locale => new_locale}, line_width: 1000)
